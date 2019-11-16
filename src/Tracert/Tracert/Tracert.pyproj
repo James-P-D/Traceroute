@@ -11,6 +11,9 @@
     <OutputPath>.</OutputPath>
     <Name>Tracert</Name>
     <RootNamespace>Tracert</RootNamespace>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <CommandLineArguments>news.bbc.co.uk</CommandLineArguments>
+    <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
