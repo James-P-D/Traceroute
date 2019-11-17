@@ -1,5 +1,5 @@
 # Traceroute
-A simple command-line tracert implementation in Python using ICMP packets
+A simple command-line tracert implementation in Python 3 using ICMP packets
 
 ![Screenshot](https://github.com/James-P-D/Traceroute/blob/master/screenshot.gif)
 
