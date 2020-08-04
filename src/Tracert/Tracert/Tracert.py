@@ -8,6 +8,7 @@ import time
 import struct
 import select
 
+
 ###############################################
 # Global Constants & Variables
 ###############################################
@@ -15,6 +16,7 @@ import select
 ICMP_ECHO_REQUEST = 8
 TIMEOUT = 5
 MAX_HOPS = 30
+
 
 ###############################################
 # Usage()
@@ -27,6 +29,7 @@ def usage():
     print("e.g. python tracert.py news.bbc.co.uk")
     print("e.g. python tracert.py 212.58.249.145")
     os._exit(0)
+
 
 ###############################################
 # Checksum Calculation (https://tools.ietf.org/html/rfc1071)
@@ -46,7 +49,7 @@ def calc_checksum(header):
         # Separate the overflow
         overflow = checksum >> 16
         # While there is an overflow
-        while overflow > 0:        
+        while overflow > 0:
             # Remove the overflow bits
             checksum = checksum & 0xFFFF
             # Add the overflow bits
@@ -58,7 +61,7 @@ def calc_checksum(header):
     # across the header, ther is *still* an overflow, so need to
     # check for that
     overflow = checksum >> 16
-    while overflow > 0:        
+    while overflow > 0:
         checksum = checksum & 0xFFFF
         checksum = checksum + overflow
         overflow = checksum >> 16
@@ -69,6 +72,7 @@ def calc_checksum(header):
 
     return checksum
 
+
 ###############################################
 # Send ICMP Ping Packet
 ###############################################
@@ -76,11 +80,21 @@ def calc_checksum(header):
 def ping(dest_addr, icmp_socket, time_to_live, id):
     # Set initial checksum to zero and create the array
     initial_checksum = 0
-    initial_header = struct.pack("bbHHh", ICMP_ECHO_REQUEST, 0, initial_checksum, id, 1)        
+    initial_header = struct.pack("bbHHh",
+                                 ICMP_ECHO_REQUEST,
+                                 0,
+                                 initial_checksum,
+                                 id,
+                                 1)
 
     # Calculate the actual checksum and the actual array
-    calculated_checksum = calc_checksum(initial_header)        
-    header = struct.pack("bbHHh", ICMP_ECHO_REQUEST, 0, (calculated_checksum), id, 1)
+    calculated_checksum = calc_checksum(initial_header)
+    header = struct.pack("bbHHh",
+                         ICMP_ECHO_REQUEST,
+                         0,
+                         calculated_checksum,
+                         id,
+                         1)
 
     # Set the TTL field in the IP section of packet
     icmp_socket.setsockopt(socket.SOL_IP, socket.IP_TTL, time_to_live)
@@ -93,24 +107,30 @@ def ping(dest_addr, icmp_socket, time_to_live, id):
     # Wait for response on socket, or timeout after TIMEOUT seconds
     socketResponseReady = select.select([icmp_socket], [], [], TIMEOUT)
     if socketResponseReady[0] == []:
-        print('{0}\t{1} ms\t???.???.???.???\t(Timeout)'.format(time_to_live, int((time.time() - start_time) * 1000.00)))
+        print('{0}\t{1} ms\t???.???.???.???\t(Timeout)'.
+              format(time_to_live,
+                     int((time.time() - start_time) * 1000.00)))
         return False
 
     # Read the data from the socket
-    recv_packet, addr = icmp_socket.recvfrom(1024)    
+    recv_packet, addr = icmp_socket.recvfrom(1024)
     hostname = ''
     try:
         # Try and convert the IP to a hostname
         host_details = socket.gethostbyaddr(addr[0])
         if len(host_details) > 0:
             hostname = host_details[0]
-    except:
+    except e:
         # if we can't find the hostname, just display 'unknown'
         hostname = 'unknown'
 
     # Display the time taken to get a response, the ip, and the hostname
-    print('{0}\t{1} ms\t{2}\t{3}'.format(time_to_live, int((time.time() - start_time) * 1000.00), addr[0], hostname))
-    
+    print('{0}\t{1} ms\t{2}\t{3}'.
+          format(time_to_live,
+                 int((time.time() - start_time) * 1000.00),
+                 addr[0],
+                 hostname))
+
     # If the packet we received back is from the final-destinaton host,
     # then our work is done!
     if addr[0] == dest_addr:
@@ -119,8 +139,9 @@ def ping(dest_addr, icmp_socket, time_to_live, id):
     # ..in all other cases, return False
     return False
 
+
 ###############################################
-# Main() 
+# Main()
 ###############################################
 
 def main():
@@ -129,11 +150,14 @@ def main():
         usage()
 
     # Get the hostname/IP we wish to Tracert
-    dest_host = sys.argv[1]        
+    dest_host = sys.argv[1]
     dest_addr = socket.gethostbyname(dest_host)
 
-    print("Tracert to {0} ({1}) over maximum of {2} hops".format(dest_addr, dest_host, MAX_HOPS))
-    
+    print("Tracert to {0} ({1}) over maximum of {2} hops".
+          format(dest_addr,
+                 dest_host,
+                 MAX_HOPS))
+
     # Set the initial id and time_to_live values
     time_to_live = 1
     id = 1
@@ -142,12 +166,14 @@ def main():
         icmp_proto = socket.getprotobyname("icmp")
         try:
             # Create the socket
-            icmp_socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, icmp_proto)
+            icmp_socket = socket.socket(socket.AF_INET,
+                                        socket.SOCK_RAW,
+                                        icmp_proto)
         except socket.error as exception:
             # On error, display it and exit
             print("Error " + exception)
             os._exit(1)
-        
+
         # Ping the host, and if function returns true, exit, since complete
         if(ping(dest_addr, icmp_socket, time_to_live, id)):
             icmp_socket.close()
@@ -162,10 +188,10 @@ def main():
     # Return to OS
     os._exit(0)
 
+
 ###############################################
 # Startup
 ###############################################
 
 if __name__ == "__main__":
     main()
-
