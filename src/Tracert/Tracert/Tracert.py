@@ -120,7 +120,7 @@ def ping(dest_addr, icmp_socket, time_to_live, id):
         host_details = socket.gethostbyaddr(addr[0])
         if len(host_details) > 0:
             hostname = host_details[0]
-    except e:
+    except:
         # if we can't find the hostname, just display 'unknown'
         hostname = 'unknown'
 
